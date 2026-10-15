@@ -1,6 +1,14 @@
 # Expense Tracker for Students (MERN) - 23CSE461- Full Stack Frameworks course, Mini Project.
 # By:- Adiseshan Ramanan, CB.SC.U4CSE23402
 
+## Live Demo
+
+- **Frontend (Vercel):** https://expense-tracker-iota-nine-63.vercel.app
+- **Backend API (Render):** https://expense-tracker-z2p8.onrender.com
+- **Health check:** https://expense-tracker-z2p8.onrender.com/api/health
+
+> The backend runs on Render's free tier and sleeps when idle, so the first request after a while can take up to a minute.
+
 A pocket-money tracker for school and college students: record the pocket money you receive and what you spend in the canteen, hostel, on books, xerox, travel and more, then review monthly summaries with charts. Built with **MongoDB, Express, React and Node.js**, with JWT authentication.
 
 - **Backend:** Express 5 REST API, Mongoose, Zod validation, JWT auth with real logout (token denylist), MongoDB aggregation for summaries, rate limiting, Helmet, CORS.

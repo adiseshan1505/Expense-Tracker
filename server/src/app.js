@@ -23,6 +23,15 @@ app.use(
 app.use(express.json({ limit: '10kb' }));
 if (!env.isTest) app.use(morgan(env.isProduction ? 'combined' : 'dev'));
 
+app.get('/', (_req, res) => {
+  res.json({
+    name: 'Expense Tracker API',
+    status: 'ok',
+    health: '/api/health',
+    docs: 'https://github.com/adiseshan1505/Expense-Tracker/blob/main/docs/API.md',
+  });
+});
+
 app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
