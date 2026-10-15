@@ -1,4 +1,5 @@
-# Expense Tracker for Students (MERN)
+# Expense Tracker for Students (MERN) - 23CSE461- Full Stack Frameworks course, Mini Project.
+# By:- Adiseshan Ramanan, CB.SC.U4CSE23402
 
 A pocket-money tracker for school and college students: record the pocket money you receive and what you spend in the canteen, hostel, on books, xerox, travel and more, then review monthly summaries with charts. Built with **MongoDB, Express, React and Node.js**, with JWT authentication.
 
