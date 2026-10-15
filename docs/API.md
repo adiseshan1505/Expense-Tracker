@@ -12,7 +12,7 @@ Base URL: `/api` (local: `http://localhost:5050/api`). All request and response 
 | Transactions | Create, list, view, update, delete pocket money (`income`) and expense records scoped to the logged-in user |
 | Filtering | By month (`YYYY-MM`), type, category, payment method, free-text search on note/category; sorting and pagination |
 | Summary | Monthly pocket money, spending, amount left over, % saved, category breakdown, payment-method breakdown, zero-filled daily series, N-month pocket money vs spending trend (MongoDB aggregation with `$facet`) |
-| UI | Responsive dashboard with charts and table views, add/edit/delete from the dashboard and the transactions list, form validation, loading/error/empty states, light/dark theme |
+| UI | Responsive dashboard with charts and table views, add/edit/delete from the dashboard and the transactions list, form validation, loading/error/empty states |
 
 ## 2. MongoDB schemas
 

@@ -4,7 +4,7 @@
 A pocket-money tracker for school and college students: record the pocket money you receive and what you spend in the canteen, hostel, on books, xerox, travel and more, then review monthly summaries with charts. Built with **MongoDB, Express, React and Node.js**, with JWT authentication.
 
 - **Backend:** Express 5 REST API, Mongoose, Zod validation, JWT auth with real logout (token denylist), MongoDB aggregation for summaries, rate limiting, Helmet, CORS.
-- **Frontend:** React 19 + Vite, React Router, Axios, Recharts; responsive dashboard, CRUD modals with validation, loading/error/empty states, light/dark theme.
+- **Frontend:** React 19 + Vite, React Router, Axios, Recharts; responsive dashboard, CRUD modals with validation, loading/error/empty states.
 - **Tests:** 35 API tests with Node's built-in test runner, Supertest and an in-memory MongoDB.
 
 The full API contract and schemas are in [docs/API.md](docs/API.md).
@@ -13,7 +13,7 @@ The full API contract and schemas are in [docs/API.md](docs/API.md).
 
 - Sign up, log in, log out, change password (signs out other sessions), update name/currency, delete account
 - Add, edit and delete entries: amount, type (pocket money/expense), category, date, payment method, optional note
-- Edit from the dashboard's recent list or the transactions page — click a row or its **Edit** button
+- Edit from the dashboard's recent list or the transactions page using the **Edit** button
 - Student categories: pocket money from parents, scholarships, part-time jobs; expenses like Canteen & Snacks, Hostel & Mess, Books & Notes, Stationery, Printouts & Xerox, Fees & Exams, Transport, Mobile & Internet
 - Filter by month, type, category and payment method; search notes; sort; paginate
 - Dashboard per month: pocket money, spent, left over, % saved with change vs previous month
@@ -30,7 +30,7 @@ expense-tracker/
 │   │   ├── api/               Axios instance, auth & transaction calls
 │   │   ├── components/        Layout, forms, charts, list, modal, states
 │   │   ├── context/           Auth, meta (categories), toast providers
-│   │   ├── hooks/             useAsync, useMonth, useTheme, useDebouncedValue
+│   │   ├── hooks/             useAsync, useMonth, useDebouncedValue
 │   │   ├── pages/             Login, Register, Dashboard, Transactions, Profile
 │   │   ├── styles/index.css   Design tokens + responsive styles
 │   │   └── utils/             Formatting, dates, validation
