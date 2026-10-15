@@ -1,4 +1,3 @@
-import { X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 
 export function Modal({ open, title, onClose, children, size = 'md' }) {
@@ -36,8 +35,8 @@ export function Modal({ open, title, onClose, children, size = 'md' }) {
         <div className="modal-body">
           <header className="modal-header">
             <h2 id="modal-title">{title}</h2>
-            <button className="icon-btn" onClick={onClose} aria-label="Close dialog">
-              <X size={20} />
+            <button className="close-btn" onClick={onClose} aria-label="Close dialog">
+              &times;
             </button>
           </header>
           {children}
@@ -52,11 +51,11 @@ export function ConfirmDialog({ open, title, message, confirmLabel = 'Confirm', 
     <Modal open={open} title={title} onClose={busy ? () => {} : onClose} size="sm">
       <p className="modal-text">{message}</p>
       <div className="form-actions">
-        <button className="btn btn-secondary" onClick={onClose} disabled={busy}>
+        <button className="btn btn-outline" onClick={onClose} disabled={busy}>
           Cancel
         </button>
         <button className="btn btn-danger" onClick={onConfirm} disabled={busy} autoFocus>
-          {busy ? 'Deleting…' : confirmLabel}
+          {busy ? 'Deleting...' : confirmLabel}
         </button>
       </div>
     </Modal>

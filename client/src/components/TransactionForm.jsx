@@ -85,9 +85,10 @@ export function TransactionForm({ initialValues, defaultDate, submitLabel, onSub
     <form ref={formRef} className="form" onSubmit={handleSubmit} noValidate>
       <Alert>{formError}</Alert>
 
-      <fieldset className="segmented" aria-label="Transaction type">
+      <fieldset className="radio-group">
+        <legend>Type</legend>
         {['expense', 'income'].map((type) => (
-          <label key={type} className={`segmented-option segmented-${type}`}>
+          <label key={type} className="radio">
             <input
               type="radio"
               name="type"
@@ -95,7 +96,7 @@ export function TransactionForm({ initialValues, defaultDate, submitLabel, onSub
               checked={values.type === type}
               onChange={() => update('type', type)}
             />
-            <span>{meta.typeLabel(type)}</span>
+            {meta.typeLabel(type)}
           </label>
         ))}
       </fieldset>
@@ -197,11 +198,11 @@ export function TransactionForm({ initialValues, defaultDate, submitLabel, onSub
       </FormField>
 
       <div className="form-actions">
-        <button type="button" className="btn btn-secondary" onClick={onCancel} disabled={submitting}>
+        <button type="button" className="btn btn-outline" onClick={onCancel} disabled={submitting}>
           Cancel
         </button>
         <button type="submit" className="btn btn-primary" disabled={submitting}>
-          {submitting ? 'Saving…' : submitLabel}
+          {submitting ? 'Saving...' : submitLabel}
         </button>
       </div>
     </form>

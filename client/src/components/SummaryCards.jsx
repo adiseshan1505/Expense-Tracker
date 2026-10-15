@@ -1,4 +1,3 @@
-import { TrendingDown, TrendingUp } from 'lucide-react';
 import { formatCurrency, formatMonth, formatPercent } from '../utils/format';
 
 function percentChange(current, previous) {
@@ -6,16 +5,13 @@ function percentChange(current, previous) {
   return ((current - previous) / previous) * 100;
 }
 
-function Delta({ change, goodWhenUp, previousMonth }) {
-  if (change === null || !Number.isFinite(change)) return null;
-  const up = change >= 0;
-  const good = up === goodWhenUp;
-  const Icon = up ? TrendingUp : TrendingDown;
+function Change({ value, goodWhenUp, previousMonth }) {
+  if (value === null || !Number.isFinite(value)) return null;
+  const up = value >= 0;
   return (
-    <span className={`stat-delta ${good ? 'delta-good' : 'delta-bad'}`}>
-      <Icon size={14} aria-hidden="true" />
-      {up ? 'Up' : 'Down'} {formatPercent(Math.abs(change))} vs {formatMonth(previousMonth, 'short')}
-    </span>
+    <small className={up === goodWhenUp ? 'text-success' : 'text-danger'}>
+      {up ? '▲' : '▼'} {formatPercent(Math.abs(value))} vs {formatMonth(previousMonth, 'short')}
+    </small>
   );
 }
 
@@ -25,50 +21,38 @@ export function SummaryCards({ summary, currency }) {
   const monthName = formatMonth(summary.month);
 
   return (
-    <div className="stats-grid">
-      <article className="card stat">
-        <span className="stat-label">
-          <span className="swatch swatch-income" aria-hidden="true" /> Pocket money
-        </span>
-        <strong className="stat-value">{formatCurrency(totals.income, currency)}</strong>
-        <span className="stat-sub">Received in {monthName}</span>
-        {previous && (
-          <Delta
-            change={percentChange(totals.income, previous.income)}
-            goodWhenUp
-            previousMonth={previous.month}
-          />
-        )}
-      </article>
+    <div className="stats">
+      <div className="box stat stat-income">
+        <span className="stat-label">Pocket money</span>
+        <span className="stat-value">{formatCurrency(totals.income, currency)}</span>
+        <small className="muted">Received in {monthName}</small>
+        {previous && <Change value={percentChange(totals.income, previous.income)} goodWhenUp previousMonth={previous.month} />}
+      </div>
 
-      <article className="card stat">
-        <span className="stat-label">
-          <span className="swatch swatch-expense" aria-hidden="true" /> Spent
-        </span>
-        <strong className="stat-value">{formatCurrency(totals.expense, currency)}</strong>
-        <span className="stat-sub">Spent in {monthName}</span>
+      <div className="box stat stat-expense">
+        <span className="stat-label">Spent</span>
+        <span className="stat-value">{formatCurrency(totals.expense, currency)}</span>
+        <small className="muted">Spent in {monthName}</small>
         {previous && (
-          <Delta
-            change={percentChange(totals.expense, previous.expense)}
-            goodWhenUp={false}
-            previousMonth={previous.month}
-          />
+          <Change value={percentChange(totals.expense, previous.expense)} goodWhenUp={false} previousMonth={previous.month} />
         )}
-      </article>
+      </div>
 
-      <article className="card stat">
+      <div className="box stat">
         <span className="stat-label">Left over</span>
-        <strong className="stat-value">{formatCurrency(totals.balance, currency, { sign: true })}</strong>
-        <span className="stat-sub">
-          {totals.count} transaction{totals.count === 1 ? '' : 's'} in {monthName}
+        <span className={`stat-value ${totals.balance < 0 ? 'text-danger' : ''}`}>
+          {formatCurrency(totals.balance, currency)}
         </span>
-      </article>
+        <small className="muted">
+          {totals.count} transaction{totals.count === 1 ? '' : 's'} in {monthName}
+        </small>
+      </div>
 
-      <article className="card stat">
+      <div className="box stat">
         <span className="stat-label">Saved</span>
-        <strong className="stat-value">{totals.income ? formatPercent(totals.savingsRate, 1) : '—'}</strong>
-        <span className="stat-sub">{totals.income ? `of pocket money saved in ${monthName}` : `No pocket money recorded in ${monthName}`}</span>
-      </article>
+        <span className="stat-value">{totals.income ? formatPercent(totals.savingsRate, 1) : '-'}</span>
+        <small className="muted">{totals.income ? 'of pocket money' : `No pocket money in ${monthName}`}</small>
+      </div>
     </div>
   );
 }

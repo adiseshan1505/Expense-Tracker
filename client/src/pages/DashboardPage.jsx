@@ -1,4 +1,3 @@
-import { CalendarX2, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { getErrorMessage } from '../api/client';
@@ -6,7 +5,7 @@ import { transactionsApi } from '../api/transactions';
 import { ChartCard, Legend } from '../components/ChartCard';
 import { BreakdownList, DailySpendingChart, TrendChart } from '../components/Charts';
 import { MonthPicker } from '../components/MonthPicker';
-import { EmptyState, ErrorState, Skeleton } from '../components/States';
+import { EmptyState, ErrorState, Loading } from '../components/States';
 import { SummaryCards } from '../components/SummaryCards';
 import { useTransactionActions } from '../components/TransactionActions';
 import { TransactionList } from '../components/TransactionList';
@@ -26,38 +25,16 @@ function foldTail(categories) {
   return [
     ...items.slice(0, MAX_CATEGORIES),
     {
-      label: `All others (${rest.length})`,
+      label: `Others (${rest.length})`,
       total: rest.reduce((sum, c) => sum + c.total, 0),
       percent: rest.reduce((sum, c) => sum + c.percent, 0),
     },
   ];
 }
 
-function DashboardSkeleton() {
-  return (
-    <div className="dashboard-grid" aria-busy="true">
-      <div className="stats-grid span-full">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="card stat">
-            <Skeleton width="40%" />
-            <Skeleton height={28} width="70%" />
-            <Skeleton width="50%" />
-          </div>
-        ))}
-      </div>
-      <div className="card span-2">
-        <Skeleton height={280} />
-      </div>
-      <div className="card">
-        <Skeleton height={280} />
-      </div>
-    </div>
-  );
-}
-
 function DataTable({ columns, rows }) {
   return (
-    <table className="data-table">
+    <table className="table">
       <thead>
         <tr>
           {columns.map((c) => (
@@ -84,7 +61,7 @@ function DataTable({ columns, rows }) {
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { paymentMethodLabel, typeLabel } = useMeta();
+  const { paymentMethodLabel } = useMeta();
   const [month, setMonth] = useMonth();
   const [breakdownType, setBreakdownType] = useState('expense');
 
@@ -102,27 +79,23 @@ export default function DashboardPage() {
   const data = summary.data;
   const hasMonthData = data?.totals.count > 0;
   const breakdownItems = foldTail(data?.byCategory[breakdownType] ?? []);
-  const activeDays = data?.daily.filter((d) => d.expense > 0) ?? [];
   const elapsedDays = data?.daily.filter((d) => d.date <= todayISO()).length || data?.daily.length || 1;
 
   let content;
   if (summary.error && !data) {
     content = <ErrorState message={getErrorMessage(summary.error)} onRetry={summary.reload} />;
   } else if (!data) {
-    content = <DashboardSkeleton />;
+    content = <Loading />;
   } else {
     content = (
-      <div className={`dashboard-grid${summary.loading ? ' is-refreshing' : ''}`}>
-        <div className="span-full">
-          <SummaryCards summary={data} currency={currency} />
-        </div>
+      <div className={summary.loading ? 'is-refreshing' : undefined}>
+        <SummaryCards summary={data} currency={currency} />
 
         {hasMonthData ? (
-          <>
+          <div className="grid-2">
             <ChartCard
-              className="span-2"
               title="Daily spending"
-              subtitle={`Average ${money(data.totals.expense / elapsedDays)} per day`}
+              subtitle={`Avg. ${money(data.totals.expense / elapsedDays)} per day`}
               table={
                 <DataTable
                   columns={[
@@ -135,105 +108,92 @@ export default function DashboardPage() {
               }
             >
               <DailySpendingChart data={data.daily} currency={currency} />
-              <p className="chart-caption">
-                Spending recorded on {activeDays.length} of {data.daily.length} days
-              </p>
             </ChartCard>
 
             <ChartCard
               title="By category"
-              subtitle={breakdownType === 'expense' ? 'Where your money went' : 'Where your pocket money came from'}
               actions={
-                <div className="segmented segmented-sm" role="group" aria-label="Breakdown type">
-                  {['expense', 'income'].map((type) => (
-                    <button
-                      key={type}
-                      className={`segmented-option${breakdownType === type ? ' is-active' : ''}`}
-                      aria-pressed={breakdownType === type}
-                      onClick={() => setBreakdownType(type)}
-                    >
-                      {type === 'expense' ? 'Expenses' : typeLabel(type)}
-                    </button>
-                  ))}
-                </div>
+                <select
+                  className="input input-sm"
+                  value={breakdownType}
+                  onChange={(e) => setBreakdownType(e.target.value)}
+                  aria-label="Breakdown type"
+                >
+                  <option value="expense">Expenses</option>
+                  <option value="income">Pocket money</option>
+                </select>
               }
             >
               {breakdownItems.length ? (
                 <BreakdownList items={breakdownItems} currency={currency} color={breakdownType} />
               ) : (
-                <p className="muted empty-inline">No {typeLabel(breakdownType).toLowerCase()} recorded this month.</p>
+                <p className="muted">Nothing recorded this month.</p>
               )}
             </ChartCard>
-          </>
+          </div>
         ) : (
-          <div className="card span-full">
+          <div className="box">
             <EmptyState
-              icon={CalendarX2}
               title={`No transactions in ${formatMonth(month)}`}
-              message="Add your pocket money or a college expense for this month to see charts and breakdowns."
+              message="Add your pocket money or an expense to see the charts."
               action={
                 <button className="btn btn-primary" onClick={actions.openCreate}>
-                  <Plus size={16} /> Add transaction
+                  + Add Transaction
                 </button>
               }
             />
           </div>
         )}
 
-        <ChartCard
-          className="span-2"
-          title="Pocket money vs spending"
-          subtitle={`Last ${data.trend.length} months`}
-          legend={
-            <Legend
-              items={[
-                { key: 'income', label: 'Pocket money' },
-                { key: 'expense', label: 'Spent' },
-              ]}
-            />
-          }
-          table={
-            <DataTable
-              columns={[
-                { key: 'month', label: 'Month', format: (m) => formatMonth(m) },
-                { key: 'income', label: 'Pocket money', numeric: true, format: money },
-                { key: 'expense', label: 'Spent', numeric: true, format: money },
-                { key: 'balance', label: 'Left over', numeric: true, format: money },
-              ]}
-              rows={data.trend}
-            />
-          }
-        >
-          <TrendChart data={data.trend} currency={currency} />
-        </ChartCard>
+        <div className="grid-2">
+          <ChartCard
+            title="Last 6 months"
+            legend={
+              <Legend
+                items={[
+                  { key: 'income', label: 'Pocket money' },
+                  { key: 'expense', label: 'Spent' },
+                ]}
+              />
+            }
+            table={
+              <DataTable
+                columns={[
+                  { key: 'month', label: 'Month', format: (m) => formatMonth(m) },
+                  { key: 'income', label: 'Pocket money', numeric: true, format: money },
+                  { key: 'expense', label: 'Spent', numeric: true, format: money },
+                  { key: 'balance', label: 'Left over', numeric: true, format: money },
+                ]}
+                rows={data.trend}
+              />
+            }
+          >
+            <TrendChart data={data.trend} currency={currency} />
+          </ChartCard>
 
-        <ChartCard title="Payment methods" subtitle="Spending by how you paid">
-          {data.byPaymentMethod.length ? (
-            <BreakdownList
-              items={data.byPaymentMethod.map((m) => ({
-                ...m,
-                label: paymentMethodLabel(m.paymentMethod),
-                percent: data.totals.expense ? (m.total / data.totals.expense) * 100 : 0,
-              }))}
-              currency={currency}
-              color="expense"
-            />
-          ) : (
-            <p className="muted empty-inline">No expenses recorded this month.</p>
-          )}
-        </ChartCard>
+          <ChartCard title="Payment methods">
+            {data.byPaymentMethod.length ? (
+              <BreakdownList
+                items={data.byPaymentMethod.map((m) => ({
+                  ...m,
+                  label: paymentMethodLabel(m.paymentMethod),
+                  percent: data.totals.expense ? (m.total / data.totals.expense) * 100 : 0,
+                }))}
+                currency={currency}
+                color="expense"
+              />
+            ) : (
+              <p className="muted">No expenses this month.</p>
+            )}
+          </ChartCard>
+        </div>
 
         {hasMonthData && (
-          <section className="card span-full">
-            <header className="card-header">
-              <div>
-                <h2>Recent transactions</h2>
-                <p className="card-subtitle">Latest activity in {formatMonth(month)}</p>
-              </div>
-              <Link className="btn btn-ghost btn-sm" to={`/transactions?month=${month}`}>
-                View all
-              </Link>
-            </header>
+          <section className="box">
+            <div className="box-header">
+              <h2>Recent transactions</h2>
+              <Link to={`/transactions?month=${month}`}>View all</Link>
+            </div>
             {recent.error && !recent.data ? (
               <ErrorState message={getErrorMessage(recent.error)} onRetry={recent.reload} />
             ) : recent.data ? (
@@ -244,7 +204,7 @@ export default function DashboardPage() {
                 onDelete={actions.requestDelete}
               />
             ) : (
-              <Skeleton height={200} />
+              <Loading />
             )}
           </section>
         )}
@@ -254,18 +214,15 @@ export default function DashboardPage() {
 
   return (
     <>
-      <header className="page-header">
-        <div>
-          <h1>Hi, {user.name.split(' ')[0]}</h1>
-          <p className="muted">Here is your summary for {formatMonth(month)}.</p>
-        </div>
+      <div className="page-header">
+        <h1>Dashboard</h1>
         <div className="page-actions">
           <MonthPicker month={month} onChange={setMonth} />
-          <button className="btn btn-primary" aria-label="Add transaction" onClick={actions.openCreate}>
-            <Plus size={16} /> <span>Add transaction</span>
+          <button className="btn btn-primary" onClick={actions.openCreate}>
+            + Add Transaction
           </button>
         </div>
-      </header>
+      </div>
 
       {content}
 

@@ -1,53 +1,49 @@
-import { AlertCircle, Inbox, Loader2, RotateCcw } from 'lucide-react';
-
-export function Spinner({ size = 20, label = 'Loading' }) {
-  return <Loader2 className="spin" size={size} aria-label={label} role="status" />;
+export function Loading({ text = 'Loading...' }) {
+  return (
+    <p className="loading" role="status">
+      {text}
+    </p>
+  );
 }
 
 export function FullPageLoader() {
   return (
     <div className="full-page">
-      <Spinner size={32} />
+      <Loading />
     </div>
   );
 }
 
-export function ErrorState({ title = 'Something went wrong', message, onRetry }) {
+export function ErrorState({ message, onRetry }) {
   return (
-    <div className="state state-error" role="alert">
-      <AlertCircle size={28} />
-      <h3>{title}</h3>
-      {message && <p>{message}</p>}
+    <div className="error-box" role="alert">
+      <p>{message || 'Something went wrong.'}</p>
       {onRetry && (
-        <button className="btn btn-secondary" onClick={onRetry}>
-          <RotateCcw size={16} /> Try again
+        <button className="btn btn-outline btn-sm" onClick={onRetry}>
+          Retry
         </button>
       )}
     </div>
   );
 }
 
-export function EmptyState({ icon: Icon = Inbox, title, message, action }) {
+export function EmptyState({ title, message, action }) {
   return (
-    <div className="state">
-      <Icon size={28} />
-      <h3>{title}</h3>
-      {message && <p>{message}</p>}
+    <div className="empty">
+      <p>
+        <strong>{title}</strong>
+      </p>
+      {message && <p className="muted">{message}</p>}
       {action}
     </div>
   );
-}
-
-export function Skeleton({ height = 16, width = '100%', radius = 8 }) {
-  return <span className="skeleton" style={{ height, width, borderRadius: radius }} aria-hidden="true" />;
 }
 
 export function Alert({ children }) {
   if (!children) return null;
   return (
     <div className="alert" role="alert">
-      <AlertCircle size={18} />
-      <span>{children}</span>
+      {children}
     </div>
   );
 }

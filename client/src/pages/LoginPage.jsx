@@ -41,11 +41,10 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      title="Welcome back"
-      subtitle="Log in to see your pocket money dashboard."
+      title="Login"
       footer={
         <>
-          New here? <Link to="/register">Create an account</Link>
+          Don't have an account? <Link to="/register">Register</Link>
         </>
       }
     >
@@ -75,7 +74,7 @@ export default function LoginPage() {
           )}
         </FormField>
         <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
-          {submitting ? 'Logging in…' : 'Log in'}
+          {submitting ? 'Logging in...' : 'Login'}
         </button>
       </form>
     </AuthLayout>

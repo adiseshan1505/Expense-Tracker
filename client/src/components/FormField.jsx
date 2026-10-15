@@ -1,4 +1,3 @@
-import { Eye, EyeOff } from 'lucide-react';
 import { useId, useState } from 'react';
 
 export function FormField({ label, error, hint, children, id: providedId }) {
@@ -11,14 +10,14 @@ export function FormField({ label, error, hint, children, id: providedId }) {
       <label htmlFor={id}>{label}</label>
       {children({ id, 'aria-invalid': Boolean(error), 'aria-describedby': describedBy })}
       {error ? (
-        <p className="field-error" id={`${id}-error`}>
+        <small className="field-error" id={`${id}-error`}>
           {error}
-        </p>
+        </small>
       ) : (
         hint && (
-          <p className="field-hint" id={`${id}-hint`}>
+          <small className="field-hint" id={`${id}-hint`}>
             {hint}
-          </p>
+          </small>
         )
       )}
     </div>
@@ -28,15 +27,15 @@ export function FormField({ label, error, hint, children, id: providedId }) {
 export function PasswordInput(props) {
   const [visible, setVisible] = useState(false);
   return (
-    <div className="input-group">
+    <div className="password-field">
       <input {...props} type={visible ? 'text' : 'password'} className="input" />
       <button
         type="button"
-        className="icon-btn"
+        className="btn-link"
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? 'Hide password' : 'Show password'}
       >
-        {visible ? <EyeOff size={18} /> : <Eye size={18} />}
+        {visible ? 'Hide' : 'Show'}
       </button>
     </div>
   );

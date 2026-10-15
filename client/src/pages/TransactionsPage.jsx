@@ -1,11 +1,10 @@
-import { FilterX, Plus, Search, SearchX } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { getErrorMessage } from '../api/client';
 import { transactionsApi } from '../api/transactions';
 import { MonthPicker } from '../components/MonthPicker';
 import { Pagination } from '../components/Pagination';
-import { EmptyState, ErrorState, Skeleton } from '../components/States';
+import { EmptyState, ErrorState, Loading } from '../components/States';
 import { useTransactionActions } from '../components/TransactionActions';
 import { TransactionList } from '../components/TransactionList';
 import { useAuth } from '../context/AuthContext';
@@ -116,32 +115,25 @@ export default function TransactionsPage() {
   if (query.error && !data) {
     body = <ErrorState message={getErrorMessage(query.error)} onRetry={query.reload} />;
   } else if (!data) {
-    body = (
-      <div className="stack" aria-busy="true">
-        {Array.from({ length: 6 }, (_, i) => (
-          <Skeleton key={i} height={56} />
-        ))}
-      </div>
-    );
+    body = <Loading />;
   } else if (!data.transactions.length) {
     body = activeFilters ? (
       <EmptyState
-        icon={SearchX}
         title="No matching transactions"
         message="Try a different search term or clear the filters."
         action={
-          <button className="btn btn-secondary" onClick={clearFilters}>
-            <FilterX size={16} /> Clear filters
+          <button className="btn btn-outline" onClick={clearFilters}>
+            Clear filters
           </button>
         }
       />
     ) : (
       <EmptyState
-        title={`Nothing recorded in ${formatMonth(month)}`}
+        title={`No transactions in ${formatMonth(month)}`}
         message="Add your pocket money or an expense to start tracking this month."
         action={
           <button className="btn btn-primary" onClick={actions.openCreate}>
-            <Plus size={16} /> Add transaction
+            + Add Transaction
           </button>
         }
       />
@@ -162,31 +154,25 @@ export default function TransactionsPage() {
 
   return (
     <>
-      <header className="page-header">
-        <div>
-          <h1>Transactions</h1>
-          <p className="muted">Everything you recorded in {formatMonth(month)}.</p>
-        </div>
+      <div className="page-header">
+        <h1>Transactions</h1>
         <div className="page-actions">
           <MonthPicker month={month} onChange={setMonth} />
-          <button className="btn btn-primary" aria-label="Add transaction" onClick={actions.openCreate}>
-            <Plus size={16} /> <span>Add transaction</span>
+          <button className="btn btn-primary" onClick={actions.openCreate}>
+            + Add Transaction
           </button>
         </div>
-      </header>
+      </div>
 
-      <section className="card filters" aria-label="Filters">
-        <label className="input-icon">
-          <Search size={16} aria-hidden="true" />
-          <input
-            className="input"
-            type="search"
-            placeholder="Search notes or categories"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label="Search transactions"
-          />
-        </label>
+      <div className="filters">
+        <input
+          className="input filter-search"
+          type="search"
+          placeholder="Search by note or category"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          aria-label="Search transactions"
+        />
         <select
           className="input"
           value={filters.type}
@@ -236,30 +222,22 @@ export default function TransactionsPage() {
           ))}
         </select>
         {activeFilters && (
-          <button className="btn btn-ghost btn-sm" onClick={clearFilters}>
-            <FilterX size={16} /> Clear
+          <button className="btn-link" onClick={clearFilters}>
+            Clear
           </button>
         )}
-      </section>
+      </div>
 
       {data && data.pagination.total > 0 && (
-        <div className="totals-strip">
-          <span>
-            <span className="swatch swatch-income" aria-hidden="true" /> Pocket money
-            <strong>{formatCurrency(data.totals.income, currency)}</strong>
-          </span>
-          <span>
-            <span className="swatch swatch-expense" aria-hidden="true" /> Spent
-            <strong>{formatCurrency(data.totals.expense, currency)}</strong>
-          </span>
-          <span>
-            Left over <strong>{formatCurrency(data.totals.balance, currency, { sign: true })}</strong>
-          </span>
-          {activeFilters && <span className="muted">(filtered)</span>}
-        </div>
+        <p className="totals-line">
+          Pocket money: <strong className="amount-in">{formatCurrency(data.totals.income, currency)}</strong>
+          {' | '}Spent: <strong className="amount-out">{formatCurrency(data.totals.expense, currency)}</strong>
+          {' | '}Left over: <strong>{formatCurrency(data.totals.balance, currency)}</strong>
+          {activeFilters && <span className="muted"> (filtered)</span>}
+        </p>
       )}
 
-      <section className={`card list-card${query.loading && data ? ' is-refreshing' : ''}`}>{body}</section>
+      <section className={`box${query.loading && data ? ' is-refreshing' : ''}`}>{body}</section>
 
       {actions.dialogs}
     </>

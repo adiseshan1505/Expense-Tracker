@@ -1,4 +1,3 @@
-import { KeyRound, LogOut, ShieldAlert, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { authApi } from '../api/auth';
@@ -41,13 +40,11 @@ function ProfileForm() {
   };
 
   return (
-    <section className="card">
-      <header className="card-header">
+    <section className="box">
+      <header className="box-header">
         <div>
-          <h2>
-            <UserRound size={18} aria-hidden="true" /> Account details
-          </h2>
-          <p className="card-subtitle">
+          <h2>Account details</h2>
+          <p className="box-subtitle">
             {user.email} · member since {formatDate(user.createdAt)}
           </p>
         </div>
@@ -83,7 +80,7 @@ function ProfileForm() {
         </div>
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={!dirty || saving}>
-            {saving ? 'Saving…' : 'Save changes'}
+            {saving ? 'Saving...' : 'Save changes'}
           </button>
         </div>
       </form>
@@ -136,13 +133,11 @@ function PasswordForm() {
   };
 
   return (
-    <section className="card">
-      <header className="card-header">
+    <section className="box">
+      <header className="box-header">
         <div>
-          <h2>
-            <KeyRound size={18} aria-hidden="true" /> Change password
-          </h2>
-          <p className="card-subtitle">Changing your password signs out every other device.</p>
+          <h2>Change password</h2>
+          <p className="box-subtitle">Changing your password signs out every other device.</p>
         </div>
       </header>
       <form className="form" onSubmit={handleSubmit} noValidate>
@@ -181,7 +176,7 @@ function PasswordForm() {
         </div>
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Updating…' : 'Update password'}
+            {saving ? 'Updating...' : 'Update password'}
           </button>
         </div>
       </form>
@@ -230,18 +225,16 @@ function DangerZone() {
   };
 
   return (
-    <section className="card danger-card">
-      <header className="card-header">
+    <section className="box">
+      <header className="box-header">
         <div>
-          <h2>
-            <ShieldAlert size={18} aria-hidden="true" /> Session &amp; account
-          </h2>
-          <p className="card-subtitle">Log out of this device or permanently delete your account.</p>
+          <h2>Logout / Delete account</h2>
+          <p className="box-subtitle">Log out of this device or permanently delete your account.</p>
         </div>
       </header>
       <div className="danger-actions">
-        <button className="btn btn-secondary" onClick={handleLogout} disabled={loggingOut}>
-          <LogOut size={16} /> {loggingOut ? 'Logging out…' : 'Log out'}
+        <button className="btn btn-outline" onClick={handleLogout} disabled={loggingOut}>
+          {loggingOut ? 'Logging out...' : 'Logout'}
         </button>
         <button className="btn btn-danger" onClick={() => setOpen(true)}>
           Delete account
@@ -268,11 +261,11 @@ function DangerZone() {
             )}
           </FormField>
           <div className="form-actions">
-            <button type="button" className="btn btn-secondary" onClick={close} disabled={busy}>
+            <button type="button" className="btn btn-outline" onClick={close} disabled={busy}>
               Cancel
             </button>
             <button type="submit" className="btn btn-danger" disabled={busy}>
-              {busy ? 'Deleting…' : 'Delete my account'}
+              {busy ? 'Deleting...' : 'Delete my account'}
             </button>
           </div>
         </form>
@@ -284,12 +277,9 @@ function DangerZone() {
 export default function ProfilePage() {
   return (
     <>
-      <header className="page-header">
-        <div>
-          <h1>Profile</h1>
-          <p className="muted">Manage your account, password, and session.</p>
-        </div>
-      </header>
+      <div className="page-header">
+        <h1>Profile</h1>
+      </div>
       <div className="stack profile-stack">
         <ProfileForm />
         <PasswordForm />

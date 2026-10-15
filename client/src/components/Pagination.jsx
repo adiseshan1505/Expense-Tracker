@@ -1,28 +1,26 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-
 export function Pagination({ page, pages, total, limit, onChange }) {
   if (total === 0) return null;
   const from = (page - 1) * limit + 1;
   const to = Math.min(page * limit, total);
 
   return (
-    <nav className="pagination" aria-label="Pagination">
+    <div className="pagination">
       <span className="muted">
-        Showing {from}–{to} of {total}
+        Showing {from}-{to} of {total}
       </span>
       {pages > 1 && (
         <div className="pagination-controls">
-          <button className="btn btn-secondary btn-sm" onClick={() => onChange(page - 1)} disabled={page <= 1}>
-            <ChevronLeft size={16} /> Prev
+          <button className="btn btn-outline btn-sm" onClick={() => onChange(page - 1)} disabled={page <= 1}>
+            Prev
           </button>
-          <span className="muted">
+          <span>
             Page {page} of {pages}
           </span>
-          <button className="btn btn-secondary btn-sm" onClick={() => onChange(page + 1)} disabled={page >= pages}>
-            Next <ChevronRight size={16} />
+          <button className="btn btn-outline btn-sm" onClick={() => onChange(page + 1)} disabled={page >= pages}>
+            Next
           </button>
         </div>
       )}
-    </nav>
+    </div>
   );
 }

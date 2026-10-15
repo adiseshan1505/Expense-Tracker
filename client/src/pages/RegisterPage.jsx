@@ -49,7 +49,7 @@ export default function RegisterPage() {
         password: values.password,
         currency: values.currency,
       });
-      toast.success('Account created. Welcome aboard!');
+      toast.success('Account created successfully');
     } catch (err) {
       setErrors(getFieldErrors(err));
       setFormError(getErrorMessage(err));
@@ -59,11 +59,10 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Create your account"
-      subtitle="It takes less than a minute."
+      title="Register"
       footer={
         <>
-          Already have an account? <Link to="/login">Log in</Link>
+          Already have an account? <Link to="/login">Login</Link>
         </>
       }
     >
@@ -125,7 +124,7 @@ export default function RegisterPage() {
           )}
         </FormField>
         <button type="submit" className="btn btn-primary btn-block" disabled={submitting}>
-          {submitting ? 'Creating account…' : 'Create account'}
+          {submitting ? 'Creating account...' : 'Register'}
         </button>
       </form>
     </AuthLayout>
