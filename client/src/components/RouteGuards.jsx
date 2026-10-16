@@ -3,11 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { FullPageLoader } from './States';
 
 export function ProtectedRoute() {
-  const { user, ready } = useAuth();
+  const { user, ready, loggedOut } = useAuth();
   const location = useLocation();
 
   if (!ready) return <FullPageLoader />;
-  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (!user) return <Navigate to="/login" replace state={loggedOut ? undefined : { from: location }} />;
   return <Outlet />;
 }
 

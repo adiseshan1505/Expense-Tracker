@@ -9,6 +9,7 @@ export function AuthProvider({ children }) {
   const toast = useToast();
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(() => !tokenStore.get());
+  const [loggedOut, setLoggedOut] = useState(false);
 
   useEffect(() => {
     setUnauthorizedHandler((message) => {
@@ -33,6 +34,7 @@ export function AuthProvider({ children }) {
   const startSession = useCallback(({ user: nextUser, token }) => {
     tokenStore.set(token);
     setUser(nextUser);
+    setLoggedOut(false);
   }, []);
 
   const login = useCallback(async (credentials) => startSession(await authApi.login(credentials)), [startSession]);
@@ -46,17 +48,19 @@ export function AuthProvider({ children }) {
       /* the token is dropped locally either way */
     }
     tokenStore.clear();
+    setLoggedOut(true);
     setUser(null);
   }, []);
 
   const endSession = useCallback(() => {
     tokenStore.clear();
+    setLoggedOut(true);
     setUser(null);
   }, []);
 
   const value = useMemo(
-    () => ({ user, ready, login, register, logout, startSession, endSession, setUser }),
-    [user, ready, login, register, logout, startSession, endSession],
+    () => ({ user, ready, loggedOut, login, register, logout, startSession, endSession, setUser }),
+    [user, ready, loggedOut, login, register, logout, startSession, endSession],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
