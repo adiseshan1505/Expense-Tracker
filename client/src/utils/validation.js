@@ -1,28 +1,3 @@
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export function validateEmail(email) {
-  if (!email.trim()) return 'Email is required';
-  if (!EMAIL_RE.test(email.trim())) return 'Enter a valid email address';
-  return '';
-}
-
-export function validatePassword(password) {
-  if (!password) return 'Password is required';
-  if (password.length < 8) return 'Password must be at least 8 characters';
-  if (password.length > 72) return 'Password must be at most 72 characters';
-  if (!/[A-Za-z]/.test(password)) return 'Password must contain a letter';
-  if (!/\d/.test(password)) return 'Password must contain a number';
-  return '';
-}
-
-export function validateName(name) {
-  const trimmed = name.trim();
-  if (!trimmed) return 'Name is required';
-  if (trimmed.length < 2) return 'Name must be at least 2 characters';
-  if (trimmed.length > 50) return 'Name must be at most 50 characters';
-  return '';
-}
-
 export function validateTransaction(values, meta) {
   const errors = {};
   const amount = Number(values.amount);

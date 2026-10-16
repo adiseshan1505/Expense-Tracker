@@ -9,7 +9,6 @@ import { EmptyState, ErrorState, Loading } from '../components/States';
 import { SummaryCards } from '../components/SummaryCards';
 import { useTransactionActions } from '../components/TransactionActions';
 import { TransactionList } from '../components/TransactionList';
-import { useAuth } from '../context/AuthContext';
 import { useMeta } from '../context/MetaContext';
 import { useAsync } from '../hooks/useAsync';
 import { useMonth } from '../hooks/useMonth';
@@ -60,15 +59,13 @@ function DataTable({ columns, rows }) {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth();
-  const { paymentMethodLabel } = useMeta();
+  const { paymentMethodLabel, currency } = useMeta();
   const [month, setMonth] = useMonth();
   const [breakdownType, setBreakdownType] = useState('expense');
 
   const summary = useAsync((signal) => transactionsApi.summary({ month }, signal), [month]);
   const recent = useAsync((signal) => transactionsApi.list({ month, limit: 5 }, signal), [month]);
 
-  const currency = user.currency;
   const money = (v) => formatCurrency(v, currency);
   const refresh = () => {
     summary.reload();

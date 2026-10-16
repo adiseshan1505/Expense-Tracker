@@ -4,7 +4,6 @@ export const toJSONOptions = {
   transform(_doc, ret) {
     ret.id = String(ret._id);
     delete ret._id;
-    delete ret.password;
     return ret;
   },
 };

@@ -13,7 +13,7 @@ const SORTS = {
 const sumWhereType = (type) => ({ $sum: { $cond: [{ $eq: ['$type', type] }, '$amount', 0] } });
 
 async function findOwned(req) {
-  const transaction = await Transaction.findOne({ _id: req.valid.params.id, user: req.user._id });
+  const transaction = await Transaction.findById(req.valid.params.id);
   if (!transaction) throw new HttpError(404, 'Transaction not found');
   return transaction;
 }
@@ -21,7 +21,7 @@ async function findOwned(req) {
 export async function listTransactions(req, res) {
   const { month, type, category, paymentMethod, q, sort, page, limit } = req.valid.query;
 
-  const filter = { user: req.user._id };
+  const filter = {};
   if (month) {
     const { start, end } = monthRange(month);
     filter.date = { $gte: start, $lt: end };
@@ -61,7 +61,7 @@ export async function getTransaction(req, res) {
 }
 
 export async function createTransaction(req, res) {
-  const transaction = await Transaction.create({ ...req.valid.body, user: req.user._id });
+  const transaction = await Transaction.create(req.valid.body);
   res.status(201).json({ transaction });
 }
 
@@ -86,7 +86,7 @@ export async function getSummary(req, res) {
   const inMonth = { $match: { date: { $gte: start, $lt: end } } };
 
   const [facets] = await Transaction.aggregate([
-    { $match: { user: req.user._id, date: { $gte: trendStart, $lt: end } } },
+    { $match: { date: { $gte: trendStart, $lt: end } } },
     {
       $facet: {
         totals: [

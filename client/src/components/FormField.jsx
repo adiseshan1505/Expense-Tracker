@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId } from 'react';
 
 export function FormField({ label, error, hint, children, id: providedId }) {
   const generatedId = useId();
@@ -20,23 +20,6 @@ export function FormField({ label, error, hint, children, id: providedId }) {
           </small>
         )
       )}
-    </div>
-  );
-}
-
-export function PasswordInput(props) {
-  const [visible, setVisible] = useState(false);
-  return (
-    <div className="password-field">
-      <input {...props} type={visible ? 'text' : 'password'} className="input" />
-      <button
-        type="button"
-        className="btn-link"
-        onClick={() => setVisible((v) => !v)}
-        aria-label={visible ? 'Hide password' : 'Show password'}
-      >
-        {visible ? 'Hide' : 'Show'}
-      </button>
     </div>
   );
 }

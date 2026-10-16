@@ -2,36 +2,23 @@
 
 A pocket-money and expense tracker for school and college students. In the API, pocket money is stored as `type: "income"` (matching the project brief's `income/expense` field); the app labels it **Pocket money** everywhere.
 
-Base URL: `/api` (local: `http://localhost:5050/api`). All request and response bodies are JSON.
+Base URL: `/api` (local: `http://localhost:5050/api`). All request and response bodies are JSON. There is no authentication: every endpoint is public and all transactions belong to one shared list. Amounts are in Indian Rupees (INR).
 
 ## 1. Features
 
 | Area | Feature |
 | --- | --- |
-| Auth | Register, log in, log out (server-side token revocation), current user, update profile (name, currency), change password (signs out other sessions), delete account |
-| Transactions | Create, list, view, update, delete pocket money (`income`) and expense records scoped to the logged-in user |
+| Transactions | Create, list, view, update, delete pocket money (`income`) and expense records |
 | Filtering | By month (`YYYY-MM`), type, category, payment method, free-text search on note/category; sorting and pagination |
 | Summary | Monthly pocket money, spending, amount left over, % saved, category breakdown, payment-method breakdown, zero-filled daily series, N-month pocket money vs spending trend (MongoDB aggregation with `$facet`) |
 | UI | Responsive dashboard with charts and table views, add/edit/delete from the dashboard and the transactions list, form validation, loading/error/empty states |
 
 ## 2. MongoDB schemas
 
-### User
-
-| Field | Type | Rules |
-| --- | --- | --- |
-| `name` | String | required, trimmed, 2–50 chars |
-| `email` | String | required, unique, lowercase |
-| `password` | String | bcrypt hash (cost 12), `select: false`, never returned |
-| `currency` | String | one of `INR, USD, EUR, GBP, JPY, AUD, CAD, SGD, AED`; default `INR` |
-| `passwordChangedAt` | Date | tokens issued before this are rejected |
-| `createdAt`, `updatedAt` | Date | timestamps |
-
 ### Transaction
 
 | Field | Type | Rules |
 | --- | --- | --- |
-| `user` | ObjectId → User | required; every query is scoped by it |
 | `amount` | Number | required, > 0, ≤ 1,000,000,000, max 2 decimals |
 | `type` | String | `income` (pocket money) \| `expense` |
 | `category` | String | must belong to the list for the chosen `type` (see below and `GET /api/meta`) |
@@ -40,23 +27,15 @@ Base URL: `/api` (local: `http://localhost:5050/api`). All request and response 
 | `note` | String | optional, trimmed, ≤ 200 chars, default `""` |
 | `createdAt`, `updatedAt` | Date | timestamps |
 
-Indexes: `{ user: 1, date: -1 }`, `{ user: 1, type: 1, category: 1 }`.
+Indexes: `{ date: -1 }`, `{ type: 1, category: 1 }`.
 
 **Categories**
 
 - Pocket money (`income`): From Parents, Scholarship, Part-time Job, Internship Stipend, Prize Money, Gifts, Other
 - Expense: Canteen & Snacks, Hostel & Mess, Books & Notes, Stationery, Printouts & Xerox, Fees & Exams, Coaching & Tuition, Transport, Mobile & Internet, Clubs & Events, Outings & Fun, Laundry & Essentials, Medical, Other
 
-### RevokedToken
-
-| Field | Type | Rules |
-| --- | --- | --- |
-| `jti` | String | unique JWT id of a logged-out token |
-| `expiresAt` | Date | TTL index — MongoDB deletes the entry once the token would have expired |
-
 ## 3. Conventions
 
-- **Auth:** send `Authorization: Bearer <token>` on every endpoint marked 🔒. Tokens are HS256 JWTs with `sub` (user id), `jti`, `iat`, `exp` (default 7 days).
 - **IDs:** resources expose `id` (string); `_id` and `__v` are not returned.
 - **Dates:** request `YYYY-MM-DD`; responses return ISO strings such as `2026-10-05T00:00:00.000Z`.
 - **Errors:** every error has the shape below. `details` is present for validation errors.
@@ -71,57 +50,19 @@ Indexes: `{ user: 1, date: -1 }`, `{ user: 1, type: 1, category: 1 }`.
 | Status | Meaning |
 | --- | --- |
 | 400 | Validation failed / malformed JSON / invalid id |
-| 401 | Missing, invalid, expired or revoked token; bad login credentials |
-| 404 | Route or resource not found (including another user's transaction) |
-| 409 | Email already registered |
-| 429 | Too many login/register attempts (20 per 15 min per IP) |
+| 404 | Route or transaction not found |
 | 500 | Unexpected server error |
 
 ## 4. Endpoints
 
 ### Health & metadata
 
-| Method | Path | Auth | Description |
-| --- | --- | --- | --- |
-| GET | `/api/health` | — | `{ status, database, uptime }` |
-| GET | `/api/meta` | — | Allowed `types`, display `typeLabels`, `categories` (by type), `paymentMethods` (`{ value, label }`), `currencies`, `noteMaxLength` |
+| Method | Path | Description |
+| --- | --- | --- |
+| GET | `/api/health` | `{ status, database, uptime }` |
+| GET | `/api/meta` | Allowed `types`, display `typeLabels`, `categories` (by type), `paymentMethods` (`{ value, label }`), `currency` (`"INR"`), `noteMaxLength` |
 
-### Auth
-
-| Method | Path | Auth | Body | Success |
-| --- | --- | --- | --- | --- |
-| POST | `/api/auth/register` | — | `{ name, email, password, currency? }` | `201 { user, token }` |
-| POST | `/api/auth/login` | — | `{ email, password }` | `200 { user, token }` |
-| POST | `/api/auth/logout` | 🔒 | — | `204` (token is revoked) |
-| GET | `/api/auth/me` | 🔒 | — | `200 { user }` |
-| PATCH | `/api/auth/me` | 🔒 | `{ name?, currency? }` | `200 { user }` |
-| PUT | `/api/auth/password` | 🔒 | `{ currentPassword, newPassword }` | `200 { user, token }` — older tokens stop working |
-| DELETE | `/api/auth/me` | 🔒 | `{ password }` | `204` — deletes the user and all transactions |
-
-Password rules: 8–72 characters with at least one letter and one number.
-
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{ "email": "demo@example.com", "password": "Demo@1234" }
-```
-
-```json
-{
-  "user": {
-    "id": "6710a2f1c2b4a1e9d0f1a2b3",
-    "name": "Demo Student",
-    "email": "demo@example.com",
-    "currency": "INR",
-    "createdAt": "2026-10-15T07:00:00.000Z",
-    "updatedAt": "2026-10-15T07:00:00.000Z"
-  },
-  "token": "eyJhbGciOiJIUzI1NiIs..."
-}
-```
-
-### Transactions 🔒
+### Transactions
 
 | Method | Path | Description |
 | --- | --- | --- |
@@ -167,7 +108,6 @@ GET /api/transactions?month=2026-10&type=expense&page=1&limit=20
   "transactions": [
     {
       "id": "6710a3...",
-      "user": "6710a2...",
       "amount": 250.5,
       "type": "expense",
       "category": "Canteen & Snacks",

@@ -140,30 +140,6 @@ textarea {
   background: rgba(255, 255, 255, 0.12);
 }
 
-.nav-user {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.nav-name {
-  color: #cfd8e3;
-  font-size: 14px;
-}
-
-@media (max-width: 640px) {
-  .nav-links {
-    order: 3;
-    width: 100%;
-    margin-left: -10px;
-  }
-
-  .nav-name {
-    display: none;
-  }
-}
-
 /* Buttons */
 
 .btn {
@@ -209,11 +185,6 @@ textarea {
 
 .btn-danger:hover:not(:disabled) {
   background: #b71c1c;
-}
-
-.btn-light {
-  background: #fff;
-  color: var(--navbar);
 }
 
 .btn-sm {
@@ -319,22 +290,6 @@ textarea.input {
 
 .field-hint {
   color: var(--text-muted);
-}
-
-.password-field {
-  position: relative;
-}
-
-.password-field .input {
-  padding-right: 60px;
-}
-
-.password-field .btn-link {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 13px;
 }
 
 .radio-group {
@@ -749,18 +704,6 @@ textarea.input {
   gap: 10px;
 }
 
-/* Profile */
-
-.profile-stack {
-  max-width: 720px;
-  gap: 0;
-}
-
-.danger-actions {
-  display: flex;
-  gap: 8px;
-}
-
 /* Modal */
 
 .modal {
@@ -837,41 +780,4 @@ textarea.input {
 
 .toast-error {
   background: var(--danger);
-}
-
-/* Auth */
-
-.auth-page {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 60px 16px;
-}
-
-.auth-box {
-  width: 100%;
-  max-width: 400px;
-}
-
-.auth-brand {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  text-align: center;
-  color: var(--navbar);
-}
-
-.auth-tagline {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.auth-box .box {
-  padding: 22px;
-}
-
-.auth-footer {
-  text-align: center;
-  font-size: 14px;
 }

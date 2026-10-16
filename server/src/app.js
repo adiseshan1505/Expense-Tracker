@@ -5,7 +5,6 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import { env } from './config/env.js';
 import { errorHandler, notFound } from './middleware/error.js';
-import authRoutes from './routes/auth.routes.js';
 import metaRoutes from './routes/meta.routes.js';
 import transactionRoutes from './routes/transaction.routes.js';
 
@@ -41,7 +40,6 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/meta', metaRoutes);
-app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 
 app.use(notFound);

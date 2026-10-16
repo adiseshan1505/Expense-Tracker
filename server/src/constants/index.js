@@ -35,6 +35,6 @@ export const PAYMENT_METHODS = [
 
 export const PAYMENT_METHOD_VALUES = PAYMENT_METHODS.map((m) => m.value);
 
-export const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'SGD', 'AED'];
+export const CURRENCY = 'INR';
 
 export const NOTE_MAX_LENGTH = 200;

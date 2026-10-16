@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import {
   CATEGORIES,
-  CURRENCIES,
+  CURRENCY,
   NOTE_MAX_LENGTH,
   PAYMENT_METHODS,
   TRANSACTION_TYPES,
@@ -17,7 +17,7 @@ router.get('/', (_req, res) => {
     typeLabels: TYPE_LABELS,
     categories: CATEGORIES,
     paymentMethods: PAYMENT_METHODS,
-    currencies: CURRENCIES,
+    currency: CURRENCY,
     noteMaxLength: NOTE_MAX_LENGTH,
   });
 });

@@ -1,23 +1,17 @@
 import assert from 'node:assert/strict';
 import { after, before, beforeEach, describe, it } from 'node:test';
 import request from 'supertest';
-import { clearDatabase, createUser, sampleTransaction, startTestApp, stopTestApp } from './helpers.js';
+import { clearDatabase, sampleTransaction, startTestApp, stopTestApp } from './helpers.js';
 
 let app;
-let auth;
 
 before(async () => {
   app = await startTestApp();
 });
 after(stopTestApp);
-beforeEach(async () => {
-  await clearDatabase();
-  const { token } = await createUser(app);
-  auth = { Authorization: `Bearer ${token}` };
-});
+beforeEach(clearDatabase);
 
-const create = (overrides, headers = auth) =>
-  request(app).post('/api/transactions').set(headers).send(sampleTransaction(overrides));
+const create = (overrides) => request(app).post('/api/transactions').send(sampleTransaction(overrides));
 
 describe('POST /api/transactions', () => {
   it('creates a transaction', async () => {
@@ -31,14 +25,14 @@ describe('POST /api/transactions', () => {
 
   it('defaults note to an empty string', async () => {
     const { note, ...body } = sampleTransaction();
-    const res = await request(app).post('/api/transactions').set(auth).send(body).expect(201);
+    const res = await request(app).post('/api/transactions').send(body).expect(201);
     assert.equal(res.body.transaction.note, '');
   });
 
   it('validates every field', async () => {
     const res = await request(app)
       .post('/api/transactions')
-      .set(auth)
+      
       .send({ amount: -5, type: 'gift', date: '2026-02-30', paymentMethod: 'barter', note: 'x'.repeat(201) })
       .expect(400);
 
@@ -56,10 +50,6 @@ describe('POST /api/transactions', () => {
   it('rejects amounts with more than two decimals', async () => {
     await create({ amount: 10.123 }).expect(400);
   });
-
-  it('requires authentication', async () => {
-    await request(app).post('/api/transactions').send(sampleTransaction()).expect(401);
-  });
 });
 
 describe('GET /api/transactions', () => {
@@ -72,7 +62,7 @@ describe('GET /api/transactions', () => {
   });
 
   it('filters by month using inclusive start and exclusive end', async () => {
-    const res = await request(app).get('/api/transactions?month=2026-10').set(auth).expect(200);
+    const res = await request(app).get('/api/transactions?month=2026-10').expect(200);
     assert.equal(res.body.transactions.length, 3);
     assert.deepEqual(res.body.totals, { income: 5000, expense: 500, balance: 4500 });
     assert.deepEqual(
@@ -82,42 +72,33 @@ describe('GET /api/transactions', () => {
   });
 
   it('filters by type, category, payment method and search text', async () => {
-    const byType = await request(app).get('/api/transactions?month=2026-10&type=income').set(auth);
+    const byType = await request(app).get('/api/transactions?month=2026-10&type=income');
     assert.equal(byType.body.transactions.length, 1);
 
-    const byCategory = await request(app).get('/api/transactions?category=Transport').set(auth);
+    const byCategory = await request(app).get('/api/transactions?category=Transport');
     assert.equal(byCategory.body.transactions.length, 1);
 
-    const byMethod = await request(app).get('/api/transactions?paymentMethod=cash').set(auth);
+    const byMethod = await request(app).get('/api/transactions?paymentMethod=cash');
     assert.equal(byMethod.body.transactions.length, 1);
 
-    const bySearch = await request(app).get('/api/transactions?q=october').set(auth);
+    const bySearch = await request(app).get('/api/transactions?q=october');
     assert.equal(bySearch.body.transactions[0].category, 'From Parents');
   });
 
   it('ignores empty query parameters', async () => {
-    const res = await request(app).get('/api/transactions?month=2026-10&type=&category=').set(auth).expect(200);
+    const res = await request(app).get('/api/transactions?month=2026-10&type=&category=').expect(200);
     assert.equal(res.body.transactions.length, 3);
   });
 
   it('paginates and sorts', async () => {
-    const res = await request(app).get('/api/transactions?limit=2&page=2&sort=amount').set(auth).expect(200);
+    const res = await request(app).get('/api/transactions?limit=2&page=2&sort=amount').expect(200);
     assert.deepEqual(res.body.pagination, { page: 2, limit: 2, total: 5, pages: 3 });
     assert.deepEqual(res.body.transactions.map((t) => t.amount), [300, 400]);
   });
 
   it('rejects an invalid month', async () => {
-    const res = await request(app).get('/api/transactions?month=2026-13').set(auth).expect(400);
+    const res = await request(app).get('/api/transactions?month=2026-13').expect(400);
     assert.equal(res.body.details[0].field, 'month');
-  });
-
-  it("never returns another user's data", async () => {
-    const other = await createUser(app);
-    const res = await request(app)
-      .get('/api/transactions')
-      .set('Authorization', `Bearer ${other.token}`)
-      .expect(200);
-    assert.equal(res.body.transactions.length, 0);
   });
 });
 
@@ -126,7 +107,7 @@ describe('PUT and DELETE /api/transactions/:id', () => {
     const { body } = await create();
     const res = await request(app)
       .put(`/api/transactions/${body.transaction.id}`)
-      .set(auth)
+      
       .send(sampleTransaction({ amount: 99, type: 'income', category: 'Scholarship', note: 'Merit award' }))
       .expect(200);
     assert.equal(res.body.transaction.amount, 99);
@@ -138,29 +119,19 @@ describe('PUT and DELETE /api/transactions/:id', () => {
     const { body } = await create();
     await request(app)
       .put(`/api/transactions/${body.transaction.id}`)
-      .set(auth)
+      
       .send({ amount: 0 })
       .expect(400);
   });
 
-  it("returns 404 for another user's transaction", async () => {
-    const { body } = await create();
-    const other = await createUser(app);
-    const otherAuth = { Authorization: `Bearer ${other.token}` };
-
-    await request(app).put(`/api/transactions/${body.transaction.id}`).set(otherAuth).send(sampleTransaction()).expect(404);
-    await request(app).delete(`/api/transactions/${body.transaction.id}`).set(otherAuth).expect(404);
-    await request(app).get(`/api/transactions/${body.transaction.id}`).set(auth).expect(200);
-  });
-
   it('deletes a transaction', async () => {
     const { body } = await create();
-    await request(app).delete(`/api/transactions/${body.transaction.id}`).set(auth).expect(204);
-    await request(app).get(`/api/transactions/${body.transaction.id}`).set(auth).expect(404);
+    await request(app).delete(`/api/transactions/${body.transaction.id}`).expect(204);
+    await request(app).get(`/api/transactions/${body.transaction.id}`).expect(404);
   });
 
   it('rejects malformed ids', async () => {
-    const res = await request(app).delete('/api/transactions/not-an-id').set(auth).expect(400);
+    const res = await request(app).delete('/api/transactions/not-an-id').expect(400);
     assert.equal(res.body.details[0].message, 'Invalid transaction id');
   });
 });
@@ -177,7 +148,7 @@ describe('GET /api/transactions/summary', () => {
   });
 
   it('aggregates totals for the requested month', async () => {
-    const res = await request(app).get('/api/transactions/summary?month=2026-10').set(auth).expect(200);
+    const res = await request(app).get('/api/transactions/summary?month=2026-10').expect(200);
     assert.equal(res.body.month, '2026-10');
     assert.deepEqual(res.body.totals, {
       income: 50000,
@@ -189,7 +160,7 @@ describe('GET /api/transactions/summary', () => {
   });
 
   it('breaks down spending by category and payment method', async () => {
-    const res = await request(app).get('/api/transactions/summary?month=2026-10').set(auth);
+    const res = await request(app).get('/api/transactions/summary?month=2026-10');
     assert.deepEqual(res.body.byCategory.expense.map((c) => [c.category, c.total, c.count]), [
       ['Canteen & Snacks', 7000.1, 2],
       ['Stationery', 3000.2, 1],
@@ -199,7 +170,7 @@ describe('GET /api/transactions/summary', () => {
   });
 
   it('returns a zero-filled daily series and a monthly trend', async () => {
-    const res = await request(app).get('/api/transactions/summary?month=2026-10&months=3').set(auth);
+    const res = await request(app).get('/api/transactions/summary?month=2026-10&months=3');
     assert.equal(res.body.daily.length, 31);
     assert.deepEqual(res.body.daily[2], { date: '2026-10-03', income: 0, expense: 4000.3 });
     assert.deepEqual(res.body.daily[1], { date: '2026-10-02', income: 0, expense: 0 });
@@ -211,9 +182,22 @@ describe('GET /api/transactions/summary', () => {
   });
 
   it('returns zeros for an empty month', async () => {
-    const res = await request(app).get('/api/transactions/summary?month=2025-02').set(auth).expect(200);
+    const res = await request(app).get('/api/transactions/summary?month=2025-02').expect(200);
     assert.equal(res.body.totals.count, 0);
     assert.equal(res.body.daily.length, 28);
     assert.deepEqual(res.body.byCategory, { income: [], expense: [] });
+  });
+});
+
+describe('GET /api/meta', () => {
+  it('returns categories, payment methods and the fixed currency', async () => {
+    const res = await request(app).get('/api/meta').expect(200);
+    assert.equal(res.body.currency, 'INR');
+    assert.ok(res.body.categories.expense.includes('Canteen & Snacks'));
+    assert.ok(res.body.paymentMethods.some((m) => m.value === 'upi'));
+  });
+
+  it('has no authentication routes', async () => {
+    await request(app).post('/api/auth/login').send({}).expect(404);
   });
 });

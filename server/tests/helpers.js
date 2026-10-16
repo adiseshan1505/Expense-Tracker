@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
-import request from 'supertest';
 
 process.env.NODE_ENV = 'test';
-process.env.JWT_SECRET = 'test-secret';
 
 let memoryServer;
 
@@ -26,20 +24,6 @@ export async function stopTestApp() {
 
 export async function clearDatabase() {
   await Promise.all(Object.values(mongoose.connection.collections).map((c) => c.deleteMany({})));
-}
-
-let userCounter = 0;
-
-export async function createUser(app, overrides = {}) {
-  userCounter += 1;
-  const credentials = {
-    name: 'Test User',
-    email: `user${userCounter}@example.com`,
-    password: 'Passw0rd!',
-    ...overrides,
-  };
-  const res = await request(app).post('/api/auth/register').send(credentials).expect(201);
-  return { ...res.body, credentials };
 }
 
 export const sampleTransaction = (overrides = {}) => ({

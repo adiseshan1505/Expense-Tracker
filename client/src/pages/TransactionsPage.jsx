@@ -7,7 +7,6 @@ import { Pagination } from '../components/Pagination';
 import { EmptyState, ErrorState, Loading } from '../components/States';
 import { useTransactionActions } from '../components/TransactionActions';
 import { TransactionList } from '../components/TransactionList';
-import { useAuth } from '../context/AuthContext';
 import { useMeta } from '../context/MetaContext';
 import { useAsync } from '../hooks/useAsync';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
@@ -25,7 +24,6 @@ const SORT_OPTIONS = [
 ];
 
 export default function TransactionsPage() {
-  const { user } = useAuth();
   const meta = useMeta();
   const [month, setMonth] = useMonth();
   const [params, setParams] = useSearchParams();
@@ -108,7 +106,7 @@ export default function TransactionsPage() {
     },
   });
 
-  const currency = user.currency;
+  const { currency } = meta;
   const data = query.data;
 
   let body;

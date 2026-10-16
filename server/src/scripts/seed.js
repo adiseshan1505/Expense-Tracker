@@ -1,10 +1,7 @@
 import { connectDB, disconnectDB } from '../config/db.js';
 import { Transaction } from '../models/Transaction.js';
-import { User } from '../models/User.js';
 import { round2 } from '../utils/helpers.js';
 import { currentMonth, listDays, listMonths } from '../utils/month.js';
-
-const DEMO = { name: 'Demo Student', email: 'demo@example.com', password: 'Demo@1234', currency: 'INR' };
 
 // Deterministic PRNG so every seed run produces the same dataset.
 let state = 42;
@@ -33,7 +30,7 @@ const OCCASIONAL = [
   { category: 'Medical', min: 50, max: 400, chance: 0.3, methods: ['cash', 'upi'], notes: ['Pharmacy', 'Cold & fever tablets'] },
 ];
 
-function buildMonth(userId, month, today) {
+function buildMonth(month, today) {
   const days = listDays(month).filter((d) => d <= today);
   if (!days.length) return [];
 
@@ -67,24 +64,18 @@ function buildMonth(userId, month, today) {
     if (random() < t.chance) rows.push(expense(t));
   }
 
-  return rows.map((row) => ({ ...row, user: userId }));
+  return rows;
 }
 
 async function seed() {
   await connectDB();
 
-  const existing = await User.findOne({ email: DEMO.email });
-  if (existing) {
-    await Transaction.deleteMany({ user: existing._id });
-    await existing.deleteOne();
-  }
-
-  const user = await User.create(DEMO);
   const today = new Date().toISOString().slice(0, 10);
-  const docs = listMonths(currentMonth(), 6).flatMap((month) => buildMonth(user._id, month, today));
+  const docs = listMonths(currentMonth(), 6).flatMap((month) => buildMonth(month, today));
+  const { deletedCount } = await Transaction.deleteMany({});
   await Transaction.insertMany(docs);
 
-  console.log(`Seeded ${docs.length} transactions for ${DEMO.email} (password: ${DEMO.password})`);
+  console.log(`Removed ${deletedCount} existing transactions and seeded ${docs.length} sample transactions`);
 }
 
 try {

@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { getErrorMessage } from '../api/client';
 import { transactionsApi } from '../api/transactions';
-import { useAuth } from '../context/AuthContext';
+import { useMeta } from '../context/MetaContext';
 import { useToast } from '../context/ToastContext';
 import { formatCurrency } from '../utils/format';
 import { ConfirmDialog } from './Modal';
 import { TransactionFormModal } from './TransactionFormModal';
 
 export function useTransactionActions({ month, onSaved, onDeleted }) {
-  const { user } = useAuth();
+  const { currency } = useMeta();
   const toast = useToast();
   const [form, setForm] = useState({ open: false, transaction: null });
   const [deleting, setDeleting] = useState(null);
@@ -44,7 +44,7 @@ export function useTransactionActions({ month, onSaved, onDeleted }) {
           deleting &&
           `This will permanently delete the ${deleting.category} ${
             deleting.type === 'income' ? 'pocket money entry' : 'expense'
-          } of ${formatCurrency(deleting.amount, user.currency)}.`
+          } of ${formatCurrency(deleting.amount, currency)}.`
         }
         confirmLabel="Delete"
         busy={busy}

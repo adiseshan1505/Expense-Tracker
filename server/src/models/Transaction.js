@@ -9,7 +9,6 @@ import { toJSONOptions } from './toJSON.js';
 
 const transactionSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     amount: { type: Number, required: true, min: 0.01 },
     type: { type: String, enum: TRANSACTION_TYPES, required: true },
     category: {
@@ -29,7 +28,7 @@ const transactionSchema = new mongoose.Schema(
   { timestamps: true, toJSON: toJSONOptions },
 );
 
-transactionSchema.index({ user: 1, date: -1 });
-transactionSchema.index({ user: 1, type: 1, category: 1 });
+transactionSchema.index({ date: -1 });
+transactionSchema.index({ type: 1, category: 1 });
 
 export const Transaction = mongoose.model('Transaction', transactionSchema);
