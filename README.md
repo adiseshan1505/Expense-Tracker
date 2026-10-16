@@ -3,7 +3,7 @@
 
 ## Live Demo
 
-- **Frontend (Vercel):** https://expense-tracker-iota-nine-63.vercel.app
+- **Frontend (Vercel):** https://expense-tracker-phi-seven-65.vercel.app
 - **Backend API (Render):** https://expense-tracker-z2p8.onrender.com
 - **Health check:** https://expense-tracker-z2p8.onrender.com/api/health
 
